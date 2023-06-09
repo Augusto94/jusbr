@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "jusbr"
+version = "0.1.0"
+description = "Projeto para vaga de desenvolvedor na Disgesto/JusBrasil"
+authors = ["augusto94 <augustoarl@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "0.96.0"
+uvicorn = "0.22.0"
+Scrapy = "2.9.0"
+
+[tool.poetry.dev-dependencies]
+pre-commit = "3.3.2"
+ipdb = "0.13.9"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,49 @@
+fail_fast: true
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.5.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-docstring-first
+  - id: end-of-file-fixer
+  - id: check-merge-conflict
+  - id: detect-private-key
+  - id: check-json
+    exclude: .*/*json
+  - id: debug-statements
+    exclude: .pdbrc
+  - id: trailing-whitespace
+    exclude: test/*
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.11.5
+  hooks:
+  - id: isort
+    args: ["--profile", "black"]
+
+- repo: https://github.com/psf/black
+  rev: 22.3.0
+  hooks:
+  - id: black
+    args:
+    - --line-length=100
+    language_version: python3
+    files: '.*\.py$'
+
+- repo: local
+  hooks:
+  - id: autoflake
+    name: autoflake
+    entry: poetry run autoflake
+    language: system
+    types: [python]
+    args: [--in-place, --remove-all-unused-imports, --remove-duplicate-keys]
+
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.1.0
+  hooks:
+  - id: pretty-format-yaml
+    args:
+    - --autofix
+    - --preserve-quotes
+    - --indent=2

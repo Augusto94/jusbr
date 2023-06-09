@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: jusbr-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+    - 8000:8000
+    volumes:
+    - .:/app

@@ -1,0 +1,19 @@
+import os
+from urllib.parse import parse_qs
+
+alias _save with open("%2", "%3") as f: f.write(%1)
+alias save _save %1 %2 w
+alias bsave _save %1 %2 wb
+alias dump _save %1 dump.html w
+alias bdump _save %1 dump.html wb
+alias dumpbody _save response.body dump.html wb
+alias nameddumpbody _save response.body %1 wb
+
+alias ipy import IPython; IPython.embed()
+
+alias killme os.system(f"kill -9 {os.getpid()}")
+
+alias _reqinfo _pp = lambda x: __import__("pprint").pprint(x); print(f"[Method] URL: [{%1.method}] {%1.url}\n\nHeaders:"); _pp(%1.headers); print("\nBody:"); _pp(parse_qs(%1.body))
+alias reqinfo _reqinfo request
+alias resreqinfo _reqinfo response.request
+alias resinfo _pp = lambda x: __import__("pprint").pprint(x); print(f"[Status] URL: [{response.status}] {response.url}\n\nHeaders:"); _pp(response.headers)
