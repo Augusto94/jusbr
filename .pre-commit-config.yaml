@@ -13,7 +13,7 @@ repos:
   - id: debug-statements
     exclude: .pdbrc
   - id: trailing-whitespace
-    exclude: test/*
+    exclude: README.md
 
 - repo: https://github.com/pycqa/isort
   rev: 5.11.5

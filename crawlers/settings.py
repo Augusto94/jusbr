@@ -9,7 +9,7 @@ import random
 
 BOT_NAME = "jusbr"
 
-SPIDER_MODULES = ["crawlers.spiders"]
+SPIDER_MODULES = ["crawlers.spiders.tjal", "crawlers.spiders.tjce"]
 NEWSPIDER_MODULE = "crawlers.spiders"
 
 
@@ -41,7 +41,7 @@ USER_AGENT = random.choice(USER_AGENTS)
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
