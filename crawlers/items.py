@@ -18,6 +18,9 @@ class ProcessoItem(Item):
     fonte = Field()  # String
     estado = Field()  # String
     justica = Field()  # String
+    segredo_justica = Field()  # Boolean
+    termo_consulta = Field()  # String
+    last_crawled = Field()  # Datatime
 
 
 class Parte(Item):

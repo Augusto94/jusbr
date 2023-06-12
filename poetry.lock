@@ -675,6 +675,21 @@ python-versions = ">=3.7"
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pymongo"
+version = "3.9.0"
+description = "Python driver for MongoDB <http://www.mongodb.org>"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
+
+[package.extras]
+encryption = ["pymongocrypt"]
+gssapi = ["pykerberos"]
+snappy = ["python-snappy"]
+srv = ["dnspython (>=1.16.0,<2.0.0)"]
+zstd = ["zstandard"]
+
+[[package]]
 name = "pyopenssl"
 version = "23.2.0"
 description = "Python wrapper module around the OpenSSL library"
@@ -1081,7 +1096,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "b8db16ba4efb93fde2344bf9b4cd06eb9ee3c5febb4c113f4087293f4f480483"
+content-hash = "05bb829cdcde2084904b15b5daa1fee68f97fda37a278a5cae7d06c9d58c8370"
 
 [metadata.files]
 anyio = []
@@ -1141,6 +1156,7 @@ pycparser = []
 pydantic = []
 pydispatcher = []
 pygments = []
+pymongo = []
 pyopenssl = []
 pypydispatcher = []
 pytest = []

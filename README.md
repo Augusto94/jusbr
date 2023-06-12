@@ -1,9 +1,10 @@
 # JusBR
 
 API para captura de dados de processos jurídicos nos sistemas públicos
-da justiça brasileira.
-Os dados são crawleados em tempo de execução e retornados de imediato para quem 
-realiza a requisição.
+da justiça brasileira.  
+Os dados dos processos podem ser consultados e também é possível solicitar a extração
+dos dados de um processo.  
+Apenas informando a NPU tenha acesso aos dados de capa de um processo.
 
 ## Pré-requisitos
 
@@ -40,9 +41,17 @@ Nesse momento a API estará disponível para consulta de processos.
 ## Utilização
 
 Acesse a API em seu navegador na url `http://localhost:8000/docs/` e manipule a API de forma fácil através do swagger.
-Ou através de ferramentas como o Postman:
+Ou através de ferramentas como o Postman.
 
- - Endpoint: http://localhost:8000/processo/
+A API pode realizar 2 grandes principais ações.
+1. Disparar o crawleamento dos dados de um processo.
+2. Consultar os dados de um processo já crawleado.
+
+### Disparar o crawleamento dos dados de um processo.
+Para solicitar que a aplicação realize a extração dos dados de um processo, uma request `POST` deve ser feita.   
+Abaixo estão os detalhes dessa requisição:
+
+ - Endpoint: http://localhost:8000/crawl/
  - Método: POST
  - Parâmetros:
     - `{"numero": "0710802-55.2018.8.02.0001"}`: Número do processo de justiça no fomato de NPU. (O tribunal é extraído do número)
@@ -50,7 +59,7 @@ Ou através de ferramentas como o Postman:
 Um exemplo de request usando `curl` é:
 ```curl
 curl -X 'POST' \
-  'http://localhost:8000/processo' \
+  'http://localhost:8000/crawl' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -75,124 +84,180 @@ response = requests.post('http://localhost:8000/processo', headers=headers, json
 print(response.json())
 ```
 
-#### *Retorno padrão*
-A API FastAPI receberá uma requisição com o número de um processo de justiça. Em seguida, ela disparará o crawler correspondente para obter as informações do processo e retornará as informações como resposta. O processo sempre será buscado tanto no 1º quando no 2º grau.
+Após isso o usuário pode receber 2 possíveis retornos na response em formato JSON:
+1. Mensagem informando que o disparo do crawler foi iniciado `(status_code: 200)`:
+    ```json
+    {
+    "detail": "A captura dos dados do processo <numero> foi iniciada. Ao finalizar os dados estarão disponíveis no endpoint /processo/<numero>."
+    }
+    ```
+2. Mensagem informando que não existe crawler disponível para o número informado `(status_code: 400)`:
+    ```json
+    {
+    "detail": "Nenhum crawler disponível para o coletar as informações do número <numero>."
+    }
+    ```
+
+#### *Observação*
+```
+As informações do processo são armazenadas, pela spider, em um banco de dados MongoDB.  
+O processo sempre será consultado tanto no 1º quanto no 2º grau da justiça.  
+Esses dados podem ser acessados posteriormente por um outro endpoint da API que será descrito
+na próxima seção.
+```
+
+### Consultar os dados de um processo já crawleado.
+Um outro endpoint disponível é para fazer a consulta dos dados de um processo.  
+Após solicitaro crawleamento o usuário pode tentar consultar os dados extraídos.
+Abaixo estão os detalhes dessa requisição:
+
+ - Endpoint: http://localhost:8000/processo/{numero}
+ - Método: GET
+ - Parâmetros:
+    - `{"numero": "0710802-55.2018.8.02.0001"}`: Número do processo de justiça no fomato de NPU.
+
+Um exemplo de request usando `curl` é:
+```curl
+ccurl -X 'GET' \
+  'http://localhost:8000/processo/0710802-55.2018.8.02.0001' \
+  -H 'accept: application/json'
+```
+
+E um outro exemplo usando `python` seria:
+```python
+import requests
+
+headers = {
+    'accept': 'application/json',
+}
+
+response = requests.get('http://localhost:8000/processo/0710802-55.2018.8.02.0001', headers=headers)
+print(response.json())
+```
+
+Nesse endpoint o usuário também pode receber 2 possíveis retornos em formato JSON:
+1. Mensagem informando que o processo não consta no banco de dados da aplicação;
+2. Os dados dos processo no formato de lista de objetos (dicionários). 
+#### *Retorno padrão dos dados de um processo*
+Quando o endpoint de ler os dados de um processo é chamado a API realiza uma consulta no MongoDB e retorna
+todas os objetos correspondentes na consulta.  
 
 Exemplo de resposta em JSON:
 ```json
+[
     {
-        "1 Grau": [
+        "numero": "0700442-69.2022.8.02.0050",
+        "data_distribuicao": "2022-05-12 00:00:00",
+        "assuntos": [
+            "Práticas Abusivas"
+        ],
+        "area": "Cível",
+        "valor_acao": 30466.96,
+        "juiz": "Lívia Maria Mattos Melo Lima",
+        "vara": "1ª Vara de Porto Calvo",
+        "foro": "Foro de Porto Calvo",
+        "classe": "Procedimento Comum Cível",
+        "status": "Em grau de recurso",
+        "instancia": "1 Grau",
+        "spider": "tjal",
+        "fonte": "esaj",
+        "estado": "AL",
+        "justica": "cível",
+        "segredo_justica": false,
+        "termo_consulta": "0700442-69.2022.8.02.0050",
+        "last_crawled": "2023-06-12T16:18:22.951000",
+        "partes": [
             {
-                "numero": "0700442-69.2022.8.02.0050",
-                "data_distribuicao": "2022-05-12 00:00:00",
-                "assuntos": [
-                    "Práticas Abusivas"
-                ],
-                "area": "Cível",
-                "valor_acao": 30466.96,
-                "juiz": "Lívia Maria Mattos Melo Lima",
-                "vara": "1ª Vara de Porto Calvo",
-                "foro": "Foro de Porto Calvo",
-                "classe": "Procedimento Comum Cível",
-                "status": "Em grau de recurso",
-                "instancia": "1 Grau",
-                "spider": "tjal",
-                "fonte": "esaj",
-                "estado": "AL",
-                "justica": "cível",
-                "partes": [
+                "advogados": [
                     {
-                        "advogados": [
-                            {
-                                "nome": "Rafael Matos Gobira"
-                            }
-                        ],
-                        "papel": "Autora",
-                        "nome": "Elisângela da Silva Nascimento"
-                    },
-                    {
-                        "advogados": [
-                            {
-                                "nome": "Rafael Goncalves Rocha"
-                            },
-                            {
-                                "nome": "João Carlos Santos Oliveira"
-                            }
-                        ],
-                        "papel": "Réu",
-                        "nome": "BCP CLARO SA"
+                        "nome": "Rafael Matos Gobira"
                     }
                 ],
-                "andamentos": [
+                "papel": "Autora",
+                "nome": "Elisângela da Silva Nascimento"
+            },
+            {
+                "advogados": [
                     {
-                        "data": "2023-05-26 00:00:00",
-                        "titulo": "Ato Publicado",
-                        "texto": "Relação: 0244/2023\nData da Publicação: 29/05/2023\nNúmero do Diário: 3311"
+                        "nome": "Rafael Goncalves Rocha"
                     },
                     {
-                        "data": "2022-12-05 00:00:00",
-                        "titulo": "Distribuído por Sorteio"
+                        "nome": "João Carlos Santos Oliveira"
                     }
-                ]
+                ],
+                "papel": "Réu",
+                "nome": "BCP CLARO SA"
             }
         ],
-        "2 Grau": [
+        "andamentos": [
             {
-                "numero": "0700442-69.2022.8.02.0050",
-                "assuntos": [
-                    "Perdas e Danos"
-                ],
-                "area": "Cível",
-                "valor_acao": 30466.96,
-                "juiz": "DES. OTÁVIO LEÃO PRAXEDES",
-                "classe": "Apelação Cível",
-                "orgao_julgador": "2ª Câmara Cível",
-                "instancia": "2 Grau",
-                "spider": "tjal",
-                "fonte": "esaj",
-                "estado": "AL",
-                "justica": "cível",
-                "partes": [
+                "data": "2023-05-26 00:00:00",
+                "titulo": "Ato Publicado",
+                "texto": "Relação: 0244/2023\nData da Publicação: 29/05/2023\nNúmero do Diário: 3311"
+            },
+            {
+                "data": "2022-12-05 00:00:00",
+                "titulo": "Distribuído por Sorteio"
+            }
+        ]
+    },
+    {
+        "numero": "0700442-69.2022.8.02.0050",
+        "assuntos": [
+            "Perdas e Danos"
+        ],
+        "area": "Cível",
+        "valor_acao": 30466.96,
+        "juiz": "DES. OTÁVIO LEÃO PRAXEDES",
+        "classe": "Apelação Cível",
+        "orgao_julgador": "2ª Câmara Cível",
+        "instancia": "2 Grau",
+        "spider": "tjal",
+        "fonte": "esaj",
+        "estado": "AL",
+        "justica": "cível",
+        "segredo_justica": false,
+        "termo_consulta": "0700442-69.2022.8.02.0050",
+        "last_crawled": "2023-06-12T16:18:22.951000",
+        "partes": [
+            {
+                "advogados": [
                     {
-                        "advogados": [
-                            {
-                                "nome": "Rafael Matos Gobira"
-                            }
-                        ],
-                        "papel": "Apelante",
-                        "nome": "Elisângela da Silva Nascimento"
-                    },
-                    {
-                        "advogados": [
-                            {
-                                "nome": "Rafael Goncalves Rocha"
-                            },
-                            {
-                                "nome": "João Carlos Santos Oliveira"
-                            }
-                        ],
-                        "papel": "Apelado",
-                        "nome": "BCP CLARO SA"
+                        "nome": "Rafael Matos Gobira"
                     }
                 ],
-                "andamentos": [
+                "papel": "Apelante",
+                "nome": "Elisângela da Silva Nascimento"
+            },
+            {
+                "advogados": [
                     {
-                        "data": "2023-05-25 00:00:00",
-                        "titulo": "Concluso ao Relator"
+                        "nome": "Rafael Goncalves Rocha"
                     },
                     {
-                        "data": "2023-05-25 00:00:00",
-                        "titulo": "Processo Cadastrado"
+                        "nome": "João Carlos Santos Oliveira"
                     }
-                ]
+                ],
+                "papel": "Apelado",
+                "nome": "BCP CLARO SA"
+            }
+        ],
+        "andamentos": [
+            {
+                "data": "2023-05-25 00:00:00",
+                "titulo": "Concluso ao Relator"
+            },
+            {
+                "data": "2023-05-25 00:00:00",
+                "titulo": "Processo Cadastrado"
             }
         ]
     }
+]
 ```
 
-Quando existir alguma dado encontrado para o processo, o retorno sempre ter 2 chaves: `1 Grau` e `2 Grau` com uma lista de objectos processo.
-Isso acontece porque em alguns casos, pricipalmente no 2º grau, a consulta de um número pode retornar mais de uma ocorrência do processo. Por isso 
-necessidade do retorno ser uma lista para cada instância.
+Como um processo pode ter mais de uma ocorrência tanto no primeiro quanto no segundo grau,o retorno de todas essas ocorrências
+estará contido nessa lista retornada pela API.
 
 Os campos possível que podem para o objeto processo são:
 
@@ -214,6 +279,10 @@ Os campos possível que podem para o objeto processo são:
 | fonte | **String** |
 | estado | **String** |
 | justica | **String** |
+| segredo_justica | **Boolean** |
+| segredo_justica | **Boolean** |
+| termo_consulta | **String** |
+| last_crawled | **Datetime** |
 | partes | **List of dict** |
 | andamentos |  **List of dict** |
 
@@ -254,44 +323,10 @@ Um exemplo de andamento é:
 ```
 
 #### *Processo em segredo de justiça*
-Quando o processo consultado se encontra em segredo de justiça a seguinte responta em JSON é retornada:
-
-```json
-{
-    "detail": "O processo <numero> se encontra em segredo de justiça e não pôde ter suas informações capturadas."
-}
-```
-
-#### *Processo não encontrado*
-Quando o processo é consultado mas não é encontrada nenhuma informação no tribunal, a seguinte responta em JSON é retornada:
-
-```json
-{
-    "detail": "Nenhuma informação foi encontrada para o número <numero>."
-}
-```
-
-#### *Crawler não implementado*
-Como o projeto ainda esta no início nem todos os tribunais estão disponíveis ainda.
-Somente o `TJAL` e o `TJCE`' estão disponíveis por enquanto, então, seo usuário tentar
-buscar informações de processos que não pertencem à esses tribunais, a seguinte responta em JSON é retornada:
-
-```json
-{
-    "detail": "Nenhum crawler disponível para o coletar as informações do número {<numero>."
-}
-```
-
-#### *Erro ao buscar informações do processo*
-Por fim, algum pode pode ocorrer durante a captura dos dados do processo.
-Instabilidadeou mudança do sistema do tribunal ou algum bug no crawler pode gerar um erro.
-Nesses casos a seguinte responta em JSON é retornada:
-
-```json
-{
-    "detail": "Houve um problema durante a execução do crawler e as informações do processo não foram capturadas."
-}
-```
+Alguns processos na justiça brasileira se encontram em segredo de justiça e os tribunais não retornam as informações.  
+Todos os objetos salvos no MongoDB possuem a informação de o processo esta em segredode justiça (`segredo_justica`).  
+Dessa forma, caso os dados de um processo retorna pela API esteja faltando várias informações, vale checar se o campo
+`segredo_justica` esta com o valor `True`.  
 
 ## Testes
 
@@ -328,6 +363,7 @@ Contribuições são bem-vindas! Se você quiser colaborar com o projeto, siga a
 #### *Stask das principais tecnologias utilizadas*
  - FastAPI
  - Scrapy
+ - MongoDB
  - Docker
  - Docker Compose
  - Pytest
@@ -352,24 +388,11 @@ menos na manipulação detalhada dos dados extraídos.
 
 #### *Possíveis problemas e soluções*
 
- - Como a API faz o disparo dos crawlers e fica aguardando o final da execução para retornar a response para o cliente,
-em alguns casos, por diversos motivos, o crawler pode levar muito tempo para finalizar sua execução e isso pode gerar uma
-experiência ruim para que esta requisitando os dados.  
-Dependendo da necessidade de que requisita os dados, o que poderia ser feito para contornar esse problema seria a 
-API disparar a execução do crawler e retornar de imediato a response informando o inicio do crawleamento.  
-Após a spider finalizar poderia ser enviado para um serviço de mensageria os dados crawleados e a aplicação que requisitou poderia
-consumir.
+ - Pode ocorrer um problema durante o processo de crawling, e os dados podem não ser extraídos. No momento atual do projeto, os usuários externos não saberão se o processo não existe ou se ocorreu um erro no processo de ingestão. Para contornar essa situação, poderia ser utilizado um serviço de mensageria, onde a aplicação cliente seria notificada sobre a finalização do crawler e o seu status. Assim, não seria necessário fazer consultas aleatórias ao endpoint para obter as informações do processo.
 
- - Seguindo nesse pensamento, uma outra melhoria seria separar a API e os crawlers em diferentes microserviços.  
-Como os crawlers são uma parte crítica da aplicação, teria sua própria API para receber solicitações de crawling e retornar os resultados.  
-A API principal faria chamadas para esse microserviço sempre que necessário. Essa abordagem oferece uma separação clara de responsabilidades e escalabilidade.
+ - Seguindo esse pensamento, outra melhoria seria separar a API e os crawlers em diferentes microserviços. Como os crawlers são uma parte crítica da aplicação, eles teriam sua própria API para receber solicitações de crawling e retornar os resultados. A API principal faria chamadas a esse microserviço sempre que necessário. Essa abordagem oferece uma separação clara de responsabilidades e possibilita escalabilidade.
 
- - Para conseguir processar uma grande quantidade de solicitações será necessário utilizar uma fila de tarefas.  
-Utilizar uma fila de tarefas, como o Celery, é uma opção eficiente para lidar com tarefas em segundo plano.  
-Pode ser configurada uma fila onde cada mensagem na fila representa uma tarefa de crawling. A API adiciona uma 
-tarefa na fila quando recebe uma solicitação e um worker processa as tarefas na fila, executando os crawlers conforme necessário.  
-Dessa forma, a API pode retornar rapidamente, e o crawling é tratado em segundo plano e em um outro microserviço.  
-
+ - Para processar uma grande quantidade de solicitações, será necessário utilizar uma fila de tarefas. Utilizar uma fila de tarefas, como o Celery, é uma opção eficiente para lidar com tarefas em segundo plano. Pode-se configurar uma fila em que cada mensagem na fila representa uma tarefa de crawling. A API adiciona uma tarefa na fila quando recebe uma solicitação, e um worker processa as tarefas na fila, executando os crawlers conforme necessário. Dessa forma, a API pode retornar rapidamente, e o crawling é tratado em segundo plano em um outro microserviço.
 ## Contato
 
 `email`: **augustoarl@gmail.com**

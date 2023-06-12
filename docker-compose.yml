@@ -7,7 +7,21 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    environment:
+    - MONGO_URL=mongodb://mongo:27017
+    - MONGO_DB=processos
+    - MONGO_COLLECTION=default_collection
     ports:
     - 8000:8000
+    depends_on:
+    - mongo-db
     volumes:
     - .:/app
+
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:latest
+    hostname: mongo
+    restart: on-failure
+    ports:
+    - "27017:27017"

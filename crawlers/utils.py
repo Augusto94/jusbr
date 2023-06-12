@@ -27,7 +27,7 @@ def string_digits_only(text: str) -> str or None:
     return "".join(re.findall(r"\d+", text))
 
 
-def format_npu(numero_npu):
+def format_npu(numero_npu: str) -> str:
     """Formats the given NPU number into a specific pattern.
 
     Args:
@@ -242,12 +242,12 @@ def alpha_characters_only(text: str) -> str or None:
         None is returned.
 
     Examples:
-        >>> alpha_characters_only("abc123xyz")
-        'abcxyz'
+        >>> alpha_characters_only("-JusBr:")
+        'JusBr'
         >>> alpha_characters_only("Jus:br")
         Jusbr
     """
     if not text:
         return None
 
-    return " ".join(re.findall(r"[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ ]+", text))
+    return " ".join(re.findall(r"[A-Za-z\dáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ ]+", text))

@@ -2,14 +2,15 @@
 #
 # Please refer to the documentation for information on how to create and manage
 # your spiders.
+from datetime import datetime
+
 import scrapy
+
+from crawlers.utils import format_npu
 
 
 class JusbrSpiderBase(scrapy.Spider):
-    dados_processo = {
-        "1 Grau": [],
-        "2 Grau": [],
-    }
+    items = []
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -30,5 +31,7 @@ class JusbrSpiderBase(scrapy.Spider):
                 "fonte": self.fonte,
                 "estado": self.estado,
                 "justica": self.justica,
+                "termo_consulta": format_npu(self.numero),
+                "last_crawled": datetime.now(),
             }
         )

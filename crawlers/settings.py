@@ -74,8 +74,11 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "crawlers.pipelines.JusbrPipeline": 300,
+    "crawlers.pipelines.JusBRMongoPipeline": 300,
 }
+
+MONGO_URI = "mongodb://mongo:27017"  # Substitua pelo endereço do seu servidor MongoDB
+MONGO_DATABASE = "processos"  # Substitua pelo nome do seu banco de dados
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

@@ -104,8 +104,9 @@ def test_no_special_characters(text, expected_result):
 @pytest.mark.parametrize(
     "text, expected_result",
     [
-        ("abc123xyz", "abcxyz"),
-        ("@JusBR Project", "JusBRProject"),
+        ("-JusBr:", "JusBr"),
+        ("@JusBR Project", "JusBR Project"),
+        ("Apelante:", "Apelante"),
         ("", None),
     ],
 )

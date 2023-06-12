@@ -40,6 +40,7 @@ class EsajSpiderBase(JusbrSpiderBase):
         numero_processo = response.xpath(XPATHS_PROCESSO["numero"]).get()
         if numero_processo and numero_processo.strip():
             yield from self.extrair_processo(response, instancia)
+        # Alguns processos retornam uma lista de processos em um popup.
         elif response.xpath(XPATHS_PROCESSO["_lista_processos"]):
             for processo_id in response.xpath(XPATHS_PROCESSO["_lista_processos"]).getall():
                 yield Request(
@@ -48,6 +49,7 @@ class EsajSpiderBase(JusbrSpiderBase):
                     method="GET",
                     cb_kwargs={"instancia": instancia},
                 )
+        # Alguns processos são retornados juntos com os relacionados em uma lista.
         elif response.xpath(XPATHS_PROCESSO["_lista_relacionados"]):
             for url_relacionado in response.xpath(XPATHS_PROCESSO["_lista_relacionados"]).getall():
                 yield Request(
@@ -56,14 +58,29 @@ class EsajSpiderBase(JusbrSpiderBase):
                     method="GET",
                     cb_kwargs={"instancia": instancia},
                 )
+        # Processos em segredo de justiça são salvos no banco com as informações básicas.
         elif response.xpath(XPATHS_PROCESSO["_popup_senha"]):
-            self.segredo_justica = True
+            loader = ProcessoLoader()
+            loader.add_values(
+                {
+                    "instancia": instancia,
+                    "segredo_justica": True,
+                }
+            )
+            self.add_default_values(loader)
+
+            yield loader.load_item()
 
     def extrair_processo(self, response, instancia):
         processo = response.xpath(XPATHS_PROCESSO["_processo"])
         loader = ProcessoLoader(selector=processo)
         loader.add_xpaths(XPATHS_PROCESSO)
-        loader.add_value("instancia", instancia)
+        loader.add_values(
+            {
+                "instancia": instancia,
+                "segredo_justica": False,
+            }
+        )
 
         self.add_default_values(loader)
 

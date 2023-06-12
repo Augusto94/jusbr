@@ -1,4 +1,9 @@
+import os
 import re
+
+import pymongo
+
+from crawlers.utils import format_npu
 
 
 def parse_npu(numero: str) -> dict:
@@ -37,3 +42,28 @@ def parse_npu(numero: str) -> dict:
         "tribunal": numero[14:16],
         "origem": numero[16:20],
     }
+
+
+def get_processo_mongo(numero: str) -> list:
+    """Retrieve process data from MongoDB based on the process number.
+
+    Retrieves the process data from MongoDB by querying the database using the formatted NPU number.
+    The NPU number is obtained by formatting the process number using the `format_npu` function.
+
+    Args:
+        numero: The process number.
+
+    Returns:
+        A list of process data documents retrieved from MongoDB.
+
+    Note:
+        - The function assumes the availability of a MongoDB server and the required environment variables.
+    """
+    npu = format_npu(numero)
+
+    mongo_client = pymongo.MongoClient(os.getenv("MONGO_URL"))
+    collection = mongo_client[os.getenv("MONGO_DB")][os.getenv("MONGO_COLLECTION")]
+
+    processos = collection.find({"termo_consulta": npu}, {"_id": 0})
+
+    return [processo for processo in processos]
