@@ -105,3 +105,5 @@ MONGO_DATABASE = "processos"  # Substitua pelo nome do seu banco de dados
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"

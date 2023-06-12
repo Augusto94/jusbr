@@ -1,3 +1,5 @@
+import logging
+
 from scrapy.http import FormRequest, Request
 
 from crawlers.loaders import AndamentoLoader, ParteLoader, ProcessoLoader
@@ -29,6 +31,7 @@ class EsajSpiderBase(JusbrSpiderBase):
         formdata = DEFAULT_FORMDATA[instancia].copy()
         formdata[CONSULTA_KEY[instancia]] = self.numero
 
+        logging.info(f"Consultando processo {self.numero} no {instancia}")
         yield FormRequest(
             url=response.urljoin("search.do"),
             formdata=formdata,
@@ -37,6 +40,7 @@ class EsajSpiderBase(JusbrSpiderBase):
         )
 
     def verificar_consulta(self, response, instancia):
+        logging.info(f"Verificando página da consulta do processo {self.numero} no {instancia}...")
         numero_processo = response.xpath(XPATHS_PROCESSO["numero"]).get()
         if numero_processo and numero_processo.strip():
             yield from self.extrair_processo(response, instancia)
@@ -72,6 +76,7 @@ class EsajSpiderBase(JusbrSpiderBase):
             yield loader.load_item()
 
     def extrair_processo(self, response, instancia):
+        logging.info(f"Extraindo dados do processo {self.numero} no {instancia}...")
         processo = response.xpath(XPATHS_PROCESSO["_processo"])
         loader = ProcessoLoader(selector=processo)
         loader.add_xpaths(XPATHS_PROCESSO)
@@ -93,6 +98,7 @@ class EsajSpiderBase(JusbrSpiderBase):
         yield item_processo
 
     def extrair_partes(self, response, item):
+        logging.info(f"Extraindo as partes do processo {self.numero} no {item.get('instancia')}...")
         partes = response.xpath(XPATHS_PARTES["_tabela_completa"])
         if not partes:
             partes = response.xpath(XPATHS_PARTES["_tabela_parcial"])
@@ -110,6 +116,9 @@ class EsajSpiderBase(JusbrSpiderBase):
             item.setdefault("partes", []).append(dict(item_parte))
 
     def extrair_andamentos(self, response, item):
+        logging.info(
+            f"Extraindo os andamentos do processo {self.numero} no {item.get('instancia')}..."
+        )
         andamentos = response.xpath(XPATHS_ANDAMENTOS["_tabela_completa"])
         if not andamentos:
             andamentos = response.xpath(XPATHS_ANDAMENTOS["_tabela_parcial"])

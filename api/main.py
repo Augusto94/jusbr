@@ -3,6 +3,7 @@ from multiprocessing.context import Process
 from fastapi import FastAPI, HTTPException, status
 
 from api.constants import TRIBUNAL2SPIDER
+from api.logger import logger
 from api.schema import ProcessoInputDTO
 from api.utils import get_processo_mongo, parse_npu
 from crawlers.runner import run_spider
@@ -54,12 +55,17 @@ def crawl_processo(processo: ProcessoInputDTO) -> dict:
 
     spider = TRIBUNAL2SPIDER.get(npu_parsed.get("tribunal"))
     if not spider:
+        output_message = (
+            f"Nenhum crawler disponível para o coletar as informações do número {numero}."
+        )
+        logger.info(output_message)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Nenhum crawler disponível para o coletar as informações do número {numero}.",
+            detail=output_message,
         )
 
     # Create, start and wait for the crawler to run in a separate process
+    logger.info(f"Disparando a spider para extrair os dados do processo {numero}")
     process = Process(target=run_spider, args=(spider, npu))
     process.start()
 
@@ -87,11 +93,14 @@ def get_processo(numero: str) -> list:
         This endpoint assumes the availability of a MongoDB database containing process information.
         The `get_processo_mongo` function is responsible for querying the MongoDB database.
     """
+    logger.info(f"Consultando processo {numero} no banco.")
     processo_list = get_processo_mongo(numero)
     if not processo_list:
+        output_message = f"O processo {numero} ainda não existe em nossa base de dados."
+        logger.info(output_message)
         raise HTTPException(
             status_code=status.HTTP_200_OK,
-            detail=f"O processo {numero} ainda não existe em nossa base de dados.",
+            detail=output_message,
         )
 
     return processo_list
