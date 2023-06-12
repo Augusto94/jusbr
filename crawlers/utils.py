@@ -127,25 +127,6 @@ def clear_value(value: str) -> str:
         return value
 
 
-def string_digits_only(text: str) -> str:
-    """Extracts and returns a string containing only the digits from the input text.
-
-    Args:
-        text: The input text from which to extract the digits.
-
-    Returns:
-        A string containing only the digits found in the input text. If the input text is empty or None,
-        None is returned.
-
-    Examples:
-        >>> string_digits_only("abc123xyz456")
-        '123456'
-    """
-    if not text:
-        return None
-    return "".join(re.findall(r"\d+", text))
-
-
 def parse_date(raw_date: str) -> str:
     """Parses a date string and returns it in a specific format.
 
@@ -268,4 +249,5 @@ def alpha_characters_only(text: str) -> str or None:
     """
     if not text:
         return None
-    return "".join(re.findall(r"[a-zA-Z]+", text))
+
+    return " ".join(re.findall(r"[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ ]+", text))

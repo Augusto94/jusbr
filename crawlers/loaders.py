@@ -3,7 +3,13 @@ from scrapy.loader import ItemLoader
 from w3lib.html import remove_tags
 
 from crawlers import items, processors
-from crawlers.utils import format_npu, parse_date, parse_money
+from crawlers.utils import (
+    alpha_characters_only,
+    format_npu,
+    normalize_spaces,
+    parse_date,
+    parse_money,
+)
 
 
 class DefaultLoader(ItemLoader):
@@ -70,7 +76,7 @@ class ProcessoLoader(DefaultLoader):
 class ParteLoader(DefaultLoader):
     default_item_class = items.Parte
 
-    papel_in = MapCompose(remove_tags, str.strip)
+    papel_in = MapCompose(remove_tags, str.strip, alpha_characters_only)
     advogados_out = Identity()
 
 
@@ -78,4 +84,4 @@ class AndamentoLoader(DefaultLoader):
     default_item_class = items.Andamento
 
     data_in = MapCompose(parse_date)
-    title_in = MapCompose(str.strip)
+    title_in = MapCompose(str.strip, normalize_spaces)

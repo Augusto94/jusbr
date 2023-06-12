@@ -73,8 +73,6 @@ class EsajSpiderBase(JusbrSpiderBase):
         self.extrair_partes(response, item_processo)
         self.extrair_andamentos(response, item_processo)
 
-        self.dados_processo.setdefault(instancia, []).append(item_processo)
-
         yield item_processo
 
     def extrair_partes(self, response, item):

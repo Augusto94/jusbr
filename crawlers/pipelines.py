@@ -9,4 +9,5 @@
 
 class JusbrPipeline:
     def process_item(self, item, spider):
+        spider.dados_processo.setdefault(item.get("instancia", [])).append(item)
         return item
